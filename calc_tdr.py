@@ -122,10 +122,6 @@ def rms(y):
 # Track design
 sleeper_distance = 0.65
 
-# Measurement positions in accordance with EN 15461 
-sleeper_pos = np.array([0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5,
-              3, 3.5, 4, 5, 6, 7, 8, 10, 12, 16, 20, 24, 30, 36, 42, 48, 54, 66])
-
 # Measurement channel setup
 channel = {
      'horizontal' : 2,
@@ -138,6 +134,11 @@ FRF = {}
 for folder in folders: 
     print(folder)
     
+    # Measurement positions in accordance with EN 15461 
+    sleeper_pos = np.array([0, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 2.25, 2.5,
+                  3, 3.5, 4, 5, 6, 7, 8, 10, 12, 16, 20, 24, 30, 36, 42, 48, 54, 66])
+
+
     if folder.startswith('01NOV22B'):
         # Correction position B 1/11 2022
         sleeper_pos[18:] = sleeper_pos[18:] - 1
@@ -162,7 +163,11 @@ for folder in folders:
      
     # Load 1/3 octave frfs with center frequencies
     TFoct3, fc = load_frf(folder, idx, oct3=True, freqlim=[100, 5000])
-    FRF[folder] = TFoct3
+    FRF[folder] = {
+        'values' : TFoct3,
+        'x' : x,
+        'f' : fc
+        }
     Nfc = len(fc)
     
     # Compute decay rates for both directions
@@ -195,7 +200,9 @@ for folder in folders:
     fig.suptitle(f"{cal['projectname']} ({cal['projectdate']})")
     
     # Load decay rates and transfer functions (FRFs)
-    TFoct3 = FRF[folder]
+    TFoct3 = FRF[folder]['values']
+    x = FRF[folder]['x']
+    fc = FRF[folder]['f']
     DR = TDR[folder]
     
     # Loop both directions
